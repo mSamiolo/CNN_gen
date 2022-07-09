@@ -1,5 +1,6 @@
+#[derive(Debug, Clone)]
 pub struct Perceptron {
-    weight: Vec<f64>,
+    pub weight: Vec<f64>,
     bias: f64,
 }
 
