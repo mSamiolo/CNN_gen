@@ -6,5 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nalgebra = "0.31.0"
-russell_lab = "0.4.1"
+# nalgebra = "0.31.0"
+# russell_lab = "0.4.1"
+# ndarray = "0.15.4"

@@ -78,18 +78,58 @@ impl MultiLayerPercetron {
         } 
         self.values[self.layers.len() -1].clone()
     }
+
+    #[allow(dead_code, unused)]
+    fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) {
+        // Repetitive code sugar 
+        let last_index = self.layers.len();
+
+        // Inzialize as y as Arr1
+        //let y = arr1(&y);  // ndarray version
+        
+        // Feed a sample to the NN
+        let output = self.run(x);
+        //let output = arr1(&(self.run(x))); // ndarray version
+
+        // Calculate the MSE - Mean squared error
+        let mut error: f64 = 0.0;
+        for i in 0..y.len() {
+            error += y[i]-output[i];
+        }   
+        let mse =  error.powf(2.0) / self.layers[last_index] as f64;
+        
+        // Calculate the output error terms
+        for i in 0..self.layers[last_index] {
+            self.d[last_index][i] = output[i] * (1.0 - output[i]) * (error);
+        }
+        
+        // Calculate the error term of each unit on each layer  ** REVIEW
+        for i in last_index-1..1 {
+            for j in 0..self.layers[i]  {
+                let mut fwd_error = 0.0;
+                for k in 0..self.layers[i+1] {
+                    fwd_error += self.network[i+1][k].weight[j] * self.d[i+1][k] 
+                }
+                self.d[i][j] = self.values[i][j] * (1.0 - self.values[i][j]) * fwd_error
+            }
+        }
+
+        // Calculate the deltas and update the weights
+        for i in 1..self.layers.len() {
+
+        }
+    }
 }
 
 fn  main() {
-    //let a =  vec![[[Perceptron::new(1,1.0)]]];
+ 
     let mut m_l = MultiLayerPercetron::new(vec![2,2,1], 0.0, 0.0);
     m_l.set_weight(5.0);
     
-
     let output = m_l.run(Vec::from([0.0, 1.0]));
-    // m_l.print_weights();
+    // m_l.back_propagation();
 
     println!("The input vector is {:?}", m_l.values[0]);
     println!("The output vector is {:?}", output);
-
+    //println!("The weighted sum is: {}", m_l.back_propagation(Vec::from([0.0, 0.0]), Vec::from([2.7, 2.1])))
 }
