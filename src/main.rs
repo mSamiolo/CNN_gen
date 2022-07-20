@@ -79,37 +79,42 @@ impl MultiLayerPercetron {
         self.values[self.layers.len() - 1].clone()
     }
 
-    #[allow(dead_code, unused)]
+    // Upload weights based on an input vector (x) and an output vector (y)
     fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
+
         // Repetitive code sugar 
-        let last_index = self.layers.len();
-        // Feed a sample to the NN
+        let last_index = self.layers.len() -1;
+        // Feed a sample to the NN and take the output vector for a comparison with y (the real result) 
         let output = self.run(x);
-        // Calculate the mse - Mean squared error
+        // Calculate the mse - Mean Squared Error
         let mut error: f64 = 0.0;
         for i in 0..y.len() {
             error += y[i]-output[i];
         }   
         let mse =  error.powf(2.0) / self.layers[last_index] as f64;
-        // Calculate the output error terms
-        for i in 0..self.layers[last_index] {
+        
+        // Calculate the vector delta (the output error terms) in the last layer 
+        for i in 0..self.layers[last_index]-1 {
             self.d[last_index][i] = output[i] * (1.0 - output[i]) * (error);
         }
+
         // Calculate the error term of each unit on each layer  ** REVIEW
-        for i in last_index-1..1 {
-            for j in 0..self.layers[i]  {
+        for i in last_index-2..1 {
+            for j in 0..self.layers[i]-1  {
+                // instanciate the forward error 
                 let mut fwd_error = 0.0;
-                for k in 0..self.layers[i+1] {
-                    fwd_error += self.network[i+1][k].weight[j] * self.d[i+1][k] 
+                for k in 0..self.layers[i-1] {
+                    fwd_error += self.network[i-1][k].weight[j] * self.d[i-1][k] 
                 }
                 self.d[i][j] = self.values[i][j] * (1.0 - self.values[i][j]) * fwd_error
             }
-        }
+        } 
+        
         // Calculate the deltas and update the weights
-        for i in 1..self.layers.len() {
+        for i in 1..self.layers.len() -1 {
             for j in 0..self.layers[i] {
                     let mut delta = 0.0;
-                for k in 0..self.layers[i-1]+1 {
+                for k in 0..self.layers[i-1] {
                     if k==self.layers[i-1] {
                         delta = self.eta * self.d[i][j] * self.bias;
                     } else {
@@ -125,27 +130,26 @@ impl MultiLayerPercetron {
 
 fn  main() {
  
-    let mut m_l = MultiLayerPercetron::new(vec![7,9,9,1], 0.0, 0.0);
-    m_l.set_weight(5.0);
-    
-    let output = m_l.run(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]));
-    // m_l.back_propagation();
+    let mut m_l = MultiLayerPercetron::new(vec![7,9,9,8,8,8,8,8,1], 0.0, 0.4);
+    m_l.set_weight(0.0);
 
-    println!("The input vector is {:?}", m_l.values[0]);
-    println!("The output vector is {:?}", output);
-    //println!("The weighted sum is: {}", m_l.back_propagation(Vec::from([0.0, 0.0]), Vec::from([2.7, 2.1.0])))
+    println!("The output vector should be 0 and it is equal to {:?}", m_l.run(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0])));
+
     let mut mse = 0.0;
     for i in 0..1000{
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]),Vec::from([0.05]));  // 0 pattern
-        // mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([0.15]));  // 1 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,1.0,0.0,1.0,1.0,0.0,1.0]),Vec::from([0.25]));  // 2 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,0.0,1.0]),Vec::from([0.35]));  // 3 pattern
-        // mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,1.0,1.0]),Vec::from([0.45]));  // 4 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([0.55]));  // 5 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([0.65]));  // 6 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([0.75]));  // 7 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([0.85]));  // 8 pattern
-        // mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([0.95]));  // 9 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]),Vec::from([0.0]));  // 0 pattern
+        mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([1.0]));  // 1 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,0.0,1.0,1.0,0.0,1.0]),Vec::from([2.0]));  // 2 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,0.0,1.0]),Vec::from([3.0]));  // 3 pattern
+        mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,1.0,1.0]),Vec::from([4.0]));  // 4 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([5.0]));  // 5 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([6.0]));  // 6 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([7.0]));  // 7 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([8.0]));  // 8 pattern
+        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([9.0]));  // 9 pattern
     }
     println!("{}",mse);
+
+    let see = m_l.run(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]));
+    println!("After training, the output vector is {:?}", see);
 }
