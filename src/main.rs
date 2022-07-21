@@ -11,11 +11,10 @@ fn run_perceptron() {
 
 // ----------------------------------------------------------------------- //
 #[derive(Debug, Clone)]
-#[allow(dead_code, unused)]
 struct MultiLayerPercetron {
-    bias: f64,            // The bias term. The same bias is used for all neurons.
-    eta: f64,             // Learning rate
-    layers: Vec<usize>,   // Array with the number of elements per layer
+    bias: f64,          // The bias term. The same bias is used for all neurons.
+    eta: f64,           // Learning rate
+    layers: Vec<usize>, // Array with the number of elements per layer
     values: Vec<Vec<f64>>,
     d: Vec<Vec<f64>>,
     network: Vec<Vec<Perceptron>>,
@@ -35,7 +34,7 @@ impl MultiLayerPercetron {
             d.push(vec![0.0; layers[i]]);
 
             if i > 0 {
-                // Vector of one layer of the NN, since they have the same inputs they can be summirized in this way 
+                // Vector of one layer of the NN, since they have the same inputs they can be summirized in this way
                 network.push(vec![Perceptron::new(layers[i - 1], bias); layers[i]]);
             }
         }
@@ -51,105 +50,155 @@ impl MultiLayerPercetron {
     }
 
     fn set_weight(&mut self, w_init: f64) {
+        // Start from 1.0 because it is the first layer that contains neurons
         for i in 1..self.layers.len() {
-            // The second for cycle start from 1.0 because it is the first layer that contains neurons 
             for j in 0..self.layers[i] {
                 self.network[i][j].set_weights(w_init);
             }
         }
     }
 
-    fn print_weights(self)  {
+    fn print_weights(self) {
         for i in 1..self.layers.len() {
-            // The second for cycle start from 1.0 because it is the first layer that contains neurons 
+            println!("Layer {}", i);
+            // The second for cycle start from 1.0 because it is the first layer that contains neurons
             for j in 0..self.layers[i] {
-                println!("Layer: {}, Neuron {}, Weight {:?}",  i+1, j+1, self.network[i][j].weight )
+                println!(
+                    "Neuron {}, Weight {:?}",
+                    j + 1,
+                    self.network[i][j].weight)
             }
         }
     }
 
-    fn run(&mut self, x: Vec<f64> ) -> Vec<f64> {
+    fn run(&mut self, x: Vec<f64>) -> Vec<f64> {
         self.values[0] = x;
 
         for i in 1..self.layers.len() {
             for j in 0..self.layers[i] {
-                self.values[i][j] = self.network[i][j].run(self.values[i-1].clone());
+                self.values[i][j] = self.network[i][j].run(self.values[i - 1].clone());
             }
-        } 
+        }
         self.values[self.layers.len() - 1].clone()
     }
 
     // Upload weights based on an input vector (x) and an output vector (y)
     fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
-
-        // Repetitive code sugar 
-        let last_index = self.layers.len() -1;
-        // Feed a sample to the NN and take the output vector for a comparison with y (the real result) 
+        // Repetitive code sugar
+        let last_layer = self.layers.len() - 1;
+        // Feed a sample to the NN and take the output vector for a comparison with y (the real result)
         let output = self.run(x);
         // Calculate the mse - Mean Squared Error
-        let mut error: f64 = 0.0;
+        let mut sum_error: f64 = 0.0;
         for i in 0..y.len() {
-            error += y[i]-output[i];
-        }   
-        let mse =  error.powf(2.0) / self.layers[last_index] as f64;
-        
-        // Calculate the vector delta (the output error terms) in the last layer 
-        for i in 0..self.layers[last_index]-1 {
-            self.d[last_index][i] = output[i] * (1.0 - output[i]) * (error);
+            sum_error += (y[i] - output[i]).powf(2.0);
+        }
+        let mse = sum_error / self.layers[last_layer] as f64;
+
+        // Calculate the vector delta (the output error terms) in the last layer
+        for j in 0..self.layers[last_layer] {
+            self.d[last_layer][j] = output[j] * (1.0 - output[j]) * (y[j] - output[j]);
         }
 
-        // Calculate the error term of each unit on each layer  ** REVIEW
-        for i in last_index-2..1 {
-            for j in 0..self.layers[i]-1  {
-                // instanciate the forward error 
+        // Calculate the error term of each perceptron on each layer
+        for i in (0..last_layer).rev() {                         // penultimo ... 2 1 0
+            for j in 0..self.network[i].len() {
+                // Instanciate the forward error
                 let mut fwd_error = 0.0;
-                for k in 0..self.layers[i-1] {
-                    fwd_error += self.network[i-1][k].weight[j] * self.d[i-1][k] 
+                for k in 0..self.layers[i+1]-1 {
+                    fwd_error += self.network[i+1][k].weight[j] * self.d[i+1][k];
                 }
-                self.d[i][j] = self.values[i][j] * (1.0 - self.values[i][j]) * fwd_error
+                self.d[i][j] = self.values[i][j] * (1.0 - self.values[i][j]) * fwd_error;
             }
-        } 
-        
+        }
+
         // Calculate the deltas and update the weights
-        for i in 1..self.layers.len() -1 {
+        for i in 1..self.layers.len() {
             for j in 0..self.layers[i] {
-                    let mut delta = 0.0;
-                for k in 0..self.layers[i-1] {
-                    if k==self.layers[i-1] {
-                        delta = self.eta * self.d[i][j] * self.bias;
-                    } else {
-                        delta = self.eta * self.d[i][j] * self.values[i-1][k];
+
+                let mut delta: f64;
+                for k in 0..self.layers[i - 1] {
+                    // quantify the weight correction associated to the bias term 
+                    if k == self.layers[i - 1] {
+                        delta = self.eta * self.d[i][j] * self.bias; 
                     } 
+                    // quantify the weight correction  associated to the neurons
+                    else {
+                        delta = self.eta * self.d[i][j] * self.values[i - 1][k];
+                    } 
+                    // updating NN weights
                     self.network[i][j].weight[k] += delta;
                 }
             }
-        } 
+        }
         mse
     }
+
+    // fn check_resutls (&mut self, x: Vec<f64>) {
+    // }
 }
 
-fn  main() {
- 
-    let mut m_l = MultiLayerPercetron::new(vec![7,9,9,8,8,8,8,8,1], 0.0, 0.4);
-    m_l.set_weight(0.0);
+fn main() {
+    // Inizialization of the multilayer network and uniform weights alloation 
+    let mut m_l = MultiLayerPercetron::new(vec![7, 3, 2, 2, 1], 0.0, 0.2);
+    let init_weight = 1.0;
+    m_l.set_weight(init_weight);
 
-    println!("The output vector should be 0 and it is equal to {:?}", m_l.run(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0])));
-
+    println!("All the weight are  equal to {init_weight}");
+    println!(
+        "The output vector should be 0 and it is equal to {:?}",
+        m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]))
+    );
+    // starting training procedure 
     let mut mse = 0.0;
-    for i in 0..1000{
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]),Vec::from([0.0]));  // 0 pattern
-        mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([1.0]));  // 1 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,0.0,1.0,1.0,0.0,1.0]),Vec::from([2.0]));  // 2 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,0.0,1.0]),Vec::from([3.0]));  // 3 pattern
-        mse += m_l.back_propagation(Vec::from([0.0,1.0,1.0,0.0,0.0,1.0,1.0]),Vec::from([4.0]));  // 4 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([5.0]));  // 5 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,0.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([6.0]));  // 6 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,0.0,0.0,0.0,0.0]),Vec::from([7.0]));  // 7 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,1.0]),Vec::from([8.0]));  // 8 pattern
-        mse += m_l.back_propagation(Vec::from([1.0,1.0,1.0,1.0,0.0,1.0,1.0]),Vec::from([9.0]));  // 9 pattern
+    for i in 0..1200 {
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
+            Vec::from([0.0]),
+        ); // 0 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+        //     Vec::from([1.0]),
+        // ); // 1 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]),
+        //     Vec::from([2.0]),
+        // ); // 2 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
+        //     Vec::from([3.0]),
+        // ); // 3 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0]),
+        //     Vec::from([4.0]),
+        // ); // 4 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+        //     Vec::from([5.0]),
+        // ); // 5 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+        //     Vec::from([6.0]),
+        // ); // 6 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+        //     Vec::from([7.0]),
+        // ); // 7 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+        //     Vec::from([8.0]),
+        // ); // 8 pattern
+        // mse += m_l.back_propagation(
+        //     Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+        //     Vec::from([9.0]),
+        // ); // 9 pattern
     }
-    println!("{}",mse);
+    println!("\nThe mean squared error is: {}", mse);
+    // println!("The value is {:?}", m_l.values);
+    // println!("\nThe delta is {:?}", m_l.d);
 
-    let see = m_l.run(Vec::from([1.0,1.0,1.0,1.0,1.0,1.0,0.0]));
-    println!("After training, the output vector is {:?}", see);
+    // m_l.print_weights();
+
+    let see = m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]));
+    println!("\nAfter training, the output vector is {:?}", see);
 }
