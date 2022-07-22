@@ -2,12 +2,12 @@
 mod perceptron;
 use perceptron::Perceptron;
 
-fn run_perceptron() {
-    let mut and_gate = Perceptron::new(2, -1.00);
-    and_gate.set_weights(20.0);
-    let result = and_gate.run(vec![0.0, 0.0]);
-    println!("Outlet {:?}:", result.round());
-}
+// fn run_perceptron() {
+//     let mut and_gate = Perceptron::new(2, -1.00);
+//     and_gate.set_weights(20.0);
+//     let result = and_gate.run(vec![0.0, 0.0]);
+//     println!("Outlet {:?}:", result.round());
+// }
 
 // ----------------------------------------------------------------------- //
 #[derive(Debug, Clone)]
@@ -58,6 +58,7 @@ impl MultiLayerPercetron {
         }
     }
 
+    #[allow(unused)]
     fn print_weights(self) {
         for i in 1..self.layers.len() {
             println!("Layer {}", i);
@@ -133,9 +134,6 @@ impl MultiLayerPercetron {
         }
         mse
     }
-
-    // fn check_resutls (&mut self, x: Vec<f64>) {
-    // }
 }
 
 fn main() {
@@ -151,7 +149,8 @@ fn main() {
     );
     // starting training procedure 
     let mut mse = 0.0;
-    for i in 0..1200 {
+    
+    for _ in 0..1200 {
         mse += m_l.back_propagation(
             Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
             Vec::from([0.0]),
