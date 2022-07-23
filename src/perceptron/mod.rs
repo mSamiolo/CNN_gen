@@ -6,10 +6,10 @@ pub struct Perceptron {
 
 impl Perceptron {
     // Setting Weights
-    pub fn new(inputs: usize, b: f64) -> Self {
+    pub fn new(inputs: usize, bias: f64) -> Self {
         Self {
             weight: vec![0.0; inputs],
-            bias: b,
+            bias,
         }
     }
 
@@ -22,7 +22,7 @@ impl Perceptron {
         1.0 / (1.0 + (-x).exp())
     }
 
-    pub fn run(&mut self, x: Vec<f64>) -> f64 {
+    pub fn run(&mut self, x: &mut Vec<f64>) -> f64 {
         // inizialization node_value
         let mut node_value = 0.0;
         // weighted summatory of inlets
