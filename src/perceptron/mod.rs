@@ -32,4 +32,13 @@ impl Perceptron {
         node_value += self.bias;
         self.sigmoid(node_value)
     }
+    
+    // AND GATE
+    #[allow(unused)]
+    fn run_or_gate_perceptron(x: &mut Vec<f64>) {
+    let mut and_gate = Perceptron::new(2, 1.00);
+    and_gate.set_weights(20.0);
+    let result = and_gate.run(x);
+    println!("Outlet {:?}:", result.round());
+}
 }

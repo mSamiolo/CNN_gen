@@ -2,23 +2,15 @@
 mod perceptron;
 use perceptron::Perceptron;
 
-#[allow(unused)]
-fn run_perceptron(x: &mut Vec<f64>) {
-    let mut and_gate = Perceptron::new(2, 1.00);
-    and_gate.set_weights(20.0);
-    let result = and_gate.run(x);
-    println!("Outlet {:?}:", result.round());
-}
-
 // ----------------------------------------------------------------------- //
 #[derive(Debug, Clone)]
 struct MultiLayerPercetron {
-    bias: f64,          // The bias term. The same bias is used for all neurons.
-    eta: f64,           // Learning rate
-    layers: Vec<usize>, // Array with the number of elements per layer
+    bias: f64,                  // The bias term. The same bias is used for all neurons.
+    eta: f64,                   // Learning rate
+    layers: Vec<usize>,         // Array with the number of elements per layer
     values: Vec<Vec<f64>>,
     d: Vec<Vec<f64>>,
-    network: Vec<Vec<Perceptron>>,
+    network: Vec<Vec<Perceptron>>
 }
 
 impl MultiLayerPercetron {
@@ -29,7 +21,7 @@ impl MultiLayerPercetron {
         let mut network = Vec::new();
         // Let space for the input layer
         network.push(Vec::new());
-        // start instancianting the entinties you need to store data
+        // Start instancianting the entinties you need to store data
         for i in 0..layers.len() {
             values.push(vec![0.0; layers[i]]);
             d.push(vec![0.0; layers[i]]);
