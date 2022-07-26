@@ -71,9 +71,7 @@ impl MultiLayerPercetron {
         // hence from the second layer
         for i in 1..self.layers.len() {
             for j in 0..self.layers[i] {
-                let previous_layer = self.values[i-1].clone();
-                println!("{:?}", previous_layer);
-                self.values[i][j] = self.network[i][j].run(previous_layer);
+                self.values[i][j] = self.network[i][j].run(self.values[i-1].clone());
             }
         }
         match self.values.last() {
@@ -90,6 +88,7 @@ impl MultiLayerPercetron {
         if output.len() != y.len() {
             panic!("The output vector is not the same length as the input vector")
         }
+        
         // Inizialization of the output vector
         let mut error: Vec<f64> = Vec::new();
         let mut mse: f64 = 0.0;
@@ -115,7 +114,7 @@ impl MultiLayerPercetron {
 
                     // Instanciate the forward error
                     let mut fwd_error = 0.0;
-                    for k in 0..self.network[i + 1].len() {
+                    for k in 0..self.layers[i + 1] {
                         fwd_error += self.network[i + 1][k].weight[j] * self.d[i + 1][k];
                     }
                     self.d[i][j] = self.values[i][j] * (1.0 - self.values[i][j]) * fwd_error;
@@ -132,10 +131,10 @@ impl MultiLayerPercetron {
         // Calculate the deltas and update the weights
         for i in 1..self.layers.len() {
             for j in 0..self.layers[i] {
-                let mut delta: f64;
-                for k in 0..self.layers[i - 1] { 
+                for k in 0..self.layers[i-1] + 1 { 
+                    let delta: f64;
                     // Quantify the weight correction associated to the bias term
-                    if k == self.layers[i]+1 {
+                    if k == self.layers[i-1] {
                         delta = self.eta * self.d[i][j] * self.bias;  // --> IT is not working
                     }
                     // Quantify the weight correction  associated to the neurons
@@ -152,24 +151,26 @@ impl MultiLayerPercetron {
 }
 
 fn main() {
+
     // Inizialization of the multilayer network and uniform weights alloation
-    let mut m_l = MultiLayerPercetron::new(vec![2, 1], 0.0, 100.0);
-    let init_weight = -6.0;
+    let mut m_l = MultiLayerPercetron::new(vec![2, 1], 0.6, 10.0);
+    let init_weight = 1.0;
     m_l.set_weight(init_weight);
 
     println!("\n------------------ NN ---------------------- \nAll the weight are  equal to {init_weight}");
     println!(
-        "The output for 0 & 0 ->  {:?}
+        "The output for 0 & 0 ->  {:?},
 The output for 1 & 0 ->  {:?},
 The output for 0 & 1 ->  {:?},
-The output for 1 & 1 ->  {:?}",
+The output for 1 & 1 ->  {:?}, delta = {:?}",
         //m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]))
         m_l.run(Vec::from([0.0, 0.0])).clone(),
         m_l.run(Vec::from([1.0, 0.0])).clone(),
         m_l.run(Vec::from([0.0, 1.0])).clone(),
-        m_l.run(Vec::from([1.0, 1.0])).clone(),
+        m_l.run(Vec::from([1.0, 1.0])).clone(), 
+        m_l.d.last().unwrap()    
     );
-    
+
     // Starting the training procedure
 
     // for _ in 0..2000 {
@@ -218,7 +219,7 @@ The output for 1 & 1 ->  {:?}",
     // }
 
     m_l.print_weights();
-    for _ in 0..20 {
+    for _ in 0..2000 {
         m_l.back_propagation(Vec::from([0.0, 0.0 ]), Vec::from([0.0]));
         m_l.back_propagation(Vec::from([0.0, 1.0 ]), Vec::from([0.0]));
         m_l.back_propagation(Vec::from([1.0, 0.0 ]), Vec::from([0.0]));
@@ -230,13 +231,14 @@ The output for 1 & 1 ->  {:?}",
         "The output for 0 & 0 ->  {:?}
 The output for 1 & 0 ->  {:?},
 The output for 0 & 1 ->  {:?},
-The output for 1 & 1 ->  {:?}",
+The output for 1 & 1 ->  {:?}, delta = {:?}",
         //m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]))
         m_l.run(Vec::from([0.0, 0.0])).clone(),
         m_l.run(Vec::from([1.0, 0.0])).clone(),
         m_l.run(Vec::from([0.0, 1.0])).clone(),
         m_l.run(Vec::from([1.0, 1.0])).clone(),
-    );
+        m_l.d.last().unwrap()    );
+        m_l.print_weights();
 
     //let see = m_l.run(Vec::from([1.0, 0.0 ]));
     //println!("The result of a test is  and it should be 1 {:?}", see);

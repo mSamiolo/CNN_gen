@@ -8,7 +8,7 @@ impl Perceptron {
     // Setting Weights
     pub fn new(inputs: usize, bias: f64) -> Self {
         Self {
-            weight: vec![0.0; inputs],
+            weight: vec![0.0; inputs +1 ],
             bias,
         }
     }
@@ -26,19 +26,19 @@ impl Perceptron {
         // inizialization node_value
         let mut node_value = 0.0;
         // weighted summatory of inlets
-        for i in 0..self.weight.len() as usize {
+        for i in 0..self.weight.len() -1 {
             node_value += self.weight[i] * x[i];
         }
-        node_value += self.bias;
+        node_value += self.bias * self.weight.last().unwrap();
         self.sigmoid(node_value)
     }
     
     // AND GATE
     #[allow(unused)]
     pub fn run_or_gate_perceptron(x: Vec<f64>) {
-        let mut and_gate = Perceptron::new(2, 1.00);
-        and_gate.set_weights(20.0);
+        let mut and_gate = Perceptron::new(2, 0.0);
+        and_gate.set_weights(10.0);
         let result = and_gate.run(x);
-        println!("Outlet {:?}:", result.round());
+        println!("Outlet {:?}:", result);
 }
 }
