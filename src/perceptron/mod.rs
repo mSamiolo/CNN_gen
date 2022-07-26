@@ -22,7 +22,7 @@ impl Perceptron {
         1.0 / (1.0 + (-x).exp())
     }
 
-    pub fn run(&mut self, x: &mut Vec<f64>) -> f64 {
+    pub fn run(&mut self, x: Vec<f64>) -> f64 {
         // inizialization node_value
         let mut node_value = 0.0;
         // weighted summatory of inlets
@@ -35,10 +35,10 @@ impl Perceptron {
     
     // AND GATE
     #[allow(unused)]
-    fn run_or_gate_perceptron(x: &mut Vec<f64>) {
-    let mut and_gate = Perceptron::new(2, 1.00);
-    and_gate.set_weights(20.0);
-    let result = and_gate.run(x);
-    println!("Outlet {:?}:", result.round());
+    pub fn run_or_gate_perceptron(x: Vec<f64>) {
+        let mut and_gate = Perceptron::new(2, 1.00);
+        and_gate.set_weights(20.0);
+        let result = and_gate.run(x);
+        println!("Outlet {:?}:", result.round());
 }
 }
