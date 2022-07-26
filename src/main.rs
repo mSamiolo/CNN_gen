@@ -101,15 +101,6 @@ impl MultiLayerPercetron {
                     // Calculate the mse - Mean Squared Error and the delta vector (the output error terms) in the last layer
                     error.push(y[j] - output[j]);
                     self.d[i][j] = output[j] * (1.0 - output[j]) * (y[j] - output[j]);
-                    /*println!(
-                        "
-                        output = {:?},
-                        y - output = {:?},
-                        delta = {:?}",
-                        output,
-                        (y[0] - output[0]),
-                        self.d
-                    );*/
                 } else {
 
                     // Instanciate the forward error
@@ -151,103 +142,66 @@ impl MultiLayerPercetron {
 }
 
 fn main() {
-
     // Inizialization of the multilayer network and uniform weights alloation
-    let mut m_l = MultiLayerPercetron::new(vec![2, 1], 0.6, 10.0);
-    let init_weight = 1.0;
+    let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 0.02, 1.50);
+    let init_weight = 0.02;
     m_l.set_weight(init_weight);
 
     println!("\n------------------ NN ---------------------- \nAll the weight are  equal to {init_weight}");
     println!(
-        "The output for 0 & 0 ->  {:?},
-The output for 1 & 0 ->  {:?},
-The output for 0 & 1 ->  {:?},
-The output for 1 & 1 ->  {:?}, delta = {:?}",
-        //m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]))
-        m_l.run(Vec::from([0.0, 0.0])).clone(),
-        m_l.run(Vec::from([1.0, 0.0])).clone(),
-        m_l.run(Vec::from([0.0, 1.0])).clone(),
-        m_l.run(Vec::from([1.0, 1.0])).clone(), 
-        m_l.d.last().unwrap()    
+        "The output should be 2 however  ->  {:?}",
+        m_l.run(Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0])).clone(),    
     );
 
     // Starting the training procedure
 
-    // for _ in 0..2000 {
-        // let mut mse = 0.0;
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
-        //     Vec::from([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 0 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-        //     Vec::from([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 1 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 2 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 3 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 4 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-        // ); // 5 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]),
-        // ); // 6 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
-        // ); // 7 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]),
-        // ); // 8 pattern
-        // mse += m_l.back_propagation(
-        //     Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
-        //     Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-    //     ); // 9 pattern
-    //     println!("MSE = {}", mse);
-    // }
-
-    m_l.print_weights();
-    for _ in 0..2000 {
-        m_l.back_propagation(Vec::from([0.0, 0.0 ]), Vec::from([0.0]));
-        m_l.back_propagation(Vec::from([0.0, 1.0 ]), Vec::from([0.0]));
-        m_l.back_propagation(Vec::from([1.0, 0.0 ]), Vec::from([0.0]));
-        m_l.back_propagation(Vec::from([1.0, 1.0 ]), Vec::from([1.0]));
+    for _ in 0..200 {
+        let mut mse = 0.0;
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
+            Vec::from([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 0 pattern
+        mse += m_l.back_propagation(
+            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+            Vec::from([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 1 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]),
+            Vec::from([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 2 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 3 pattern
+        mse += m_l.back_propagation(
+            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 4 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 5 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]),
+        ); // 6 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
+        ); // 7 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]),
+        ); // 8 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+        ); // 9 pattern
+        println!("MSE = {}", mse);
     }
-    println!("\nThe result of after training is:");
-    //m_l.print_weights(); 
+    println!("\n------------------ After training  ---------------------- \n");
     println!(
-        "The output for 0 & 0 ->  {:?}
-The output for 1 & 0 ->  {:?},
-The output for 0 & 1 ->  {:?},
-The output for 1 & 1 ->  {:?}, delta = {:?}",
-        //m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]))
-        m_l.run(Vec::from([0.0, 0.0])).clone(),
-        m_l.run(Vec::from([1.0, 0.0])).clone(),
-        m_l.run(Vec::from([0.0, 1.0])).clone(),
-        m_l.run(Vec::from([1.0, 1.0])).clone(),
-        m_l.d.last().unwrap()    );
-        m_l.print_weights();
-
-    //let see = m_l.run(Vec::from([1.0, 0.0 ]));
-    //println!("The result of a test is  and it should be 1 {:?}", see);
-    /*println!(
-        "the values of neurons in the middel layer are: {:?}",
-        m_l.values[1]
+        "The output is -> {:?}",
+        m_l.run(Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0])).clone(),    
     );
-    println!(
-        "the values of the weight fot in the middel neurons are: {:?}",
-        m_l.network[1]
-    ); */
 }
