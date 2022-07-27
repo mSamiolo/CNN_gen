@@ -143,9 +143,10 @@ impl MultiLayerPercetron {
 
 fn main() {
     // Inizialization of the multilayer network and uniform weights alloation
-    let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 0.02, 1.50);
-    let init_weight = 0.02;
+    let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 1.0, 0.50);
+    let init_weight = 0.50;
     m_l.set_weight(init_weight);
+    m_l.print_weights();
 
     println!("\n------------------ NN ---------------------- \nAll the weight are  equal to {init_weight}");
     println!(
@@ -155,7 +156,7 @@ fn main() {
 
     // Starting the training procedure
 
-    for _ in 0..200 {
+    for _ in 0..2000 {
         let mut mse = 0.0;
         mse += m_l.back_propagation(
             Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
@@ -202,6 +203,6 @@ fn main() {
     println!("\n------------------ After training  ---------------------- \n");
     println!(
         "The output is -> {:?}",
-        m_l.run(Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0])).clone(),    
+        m_l.run(Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])),    
     );
 }

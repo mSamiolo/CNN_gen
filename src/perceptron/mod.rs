@@ -1,3 +1,4 @@
+use rand::{self, Rng};
 #[derive(Debug, Clone)]
 pub struct Perceptron {
     pub weight: Vec<f64>,
@@ -14,7 +15,12 @@ impl Perceptron {
     }
 
     pub fn set_weights(&mut self, w_init: f64) {
-        self.weight.fill(w_init);
+        // Fill the weights array with random number
+        for i in 0..self.weight.len() {
+            let mut rng = rand::thread_rng();
+            self.weight[i] = rng.gen_range(0.0..w_init);
+        }
+       // self.weight.fill(w_init);
     }
 
     // Triggering behaviour
