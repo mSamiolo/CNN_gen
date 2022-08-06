@@ -2,7 +2,82 @@
 mod perceptron;
 use perceptron::Perceptron;
 
-// ----------------------------------------------------------------------- //
+/* This NN predicts the numberpads output, when it is shows the correct pattern the NN will output the numeber in that a human would associate to that numberpads */
+
+fn main() {
+    // Inizialization of the multilayer network and randoms weights alloation
+    let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 1.0, 0.50);
+    let init_weight = 0.50;
+    m_l.set_weight(init_weight);
+    m_l.print_weights();
+
+    println!("\n//------------------------------- NN -------------------------------------- \n");
+    println!(
+        "The output should be 8 however the output has this noise: \n {:?}",
+        m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])).clone()    
+    );
+
+    // Starting the training procedure
+    for i in 0..2000 {
+        let mut mse = 0.0;
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
+            Vec::from([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 0 pattern
+        mse += m_l.back_propagation(
+            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+            Vec::from([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 1 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]),
+            Vec::from([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 2 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 3 pattern
+        mse += m_l.back_propagation(
+            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 4 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+        ); // 5 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]),
+        ); // 6 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
+        ); // 7 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]),
+        ); // 8 pattern
+        mse += m_l.back_propagation(
+            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
+        ); // 9 pattern
+
+        if i % 100 == 0 {
+            println!("MSE = {}", mse);
+        }
+    }
+    println!("\n------------------ After training  ---------------------- \n");
+    
+    let result_after_training = m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]));
+    for i in 0..10 {
+        if result_after_training[i] > 0.5 {
+            println!("The trained NN recognize: {}", i)
+        }
+    }
+}
+
+
+// -------------- Inizialize Neural Network structure and its associated modules ------------------------- //
+
 #[derive(Debug, Clone)]
 struct MultiLayerPercetron {
     bias: f64,                  // The bias term. The same bias is used for all neurons.
@@ -14,13 +89,16 @@ struct MultiLayerPercetron {
 }
 
 impl MultiLayerPercetron {
+
+    // ------------------------ Construct NN ------------------------ //
+
     fn new(layers: Vec<usize>, bias: f64, eta: f64) -> Self {
         // Initialization vector parameters
         let mut values = Vec::new();
-        let mut d = Vec::new();         //  The list of lists of error terms (d = lowercase deltas)
-
-        // Let space for the input layer
+        //  Initialization matrix of error terms (d = lowercase deltas) and neurons 
+        let mut d = Vec::new();         
         let mut network = Vec::new();
+        // Let space for the input layer
         network.push(Vec::new());
 
         // Start instancianting the entinties you need to store data
@@ -45,6 +123,8 @@ impl MultiLayerPercetron {
         }
     }
 
+    // ------------------------ Weight settings ------------------------ //
+
     fn set_weight(&mut self, w_init: f64) {
         // Start from 1 because the first layer does not contains neurons
         for i in 1..self.layers.len() {
@@ -65,6 +145,8 @@ impl MultiLayerPercetron {
         }
     }
 
+    // --------------------- Running algortims -------------------- //
+
     fn run(&mut self, x: Vec<f64>) -> &Vec<f64> {
         // Setting the first layer as the input layer
         self.values[0] = x;
@@ -80,7 +162,7 @@ impl MultiLayerPercetron {
         }
     }
 
-    // Upload weights based on an input vector (x) and an output vector (y)
+    // --------------------- Training algortims / Back propagation -------------------- //
     fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
 
         // Feed a sample to the NN and take the output vector for a comparison with y (the real result)
@@ -141,68 +223,4 @@ impl MultiLayerPercetron {
     }
 }
 
-fn main() {
-    // Inizialization of the multilayer network and uniform weights alloation
-    let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 1.0, 0.50);
-    let init_weight = 0.50;
-    m_l.set_weight(init_weight);
-    m_l.print_weights();
 
-    println!("\n------------------ NN ---------------------- \nAll the weight are  equal to {init_weight}");
-    println!(
-        "The output should be 2 however  ->  {:?}",
-        m_l.run(Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0])).clone(),    
-    );
-
-    // Starting the training procedure
-
-    for _ in 0..2000 {
-        let mut mse = 0.0;
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0]),
-            Vec::from([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 0 pattern
-        mse += m_l.back_propagation(
-            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-            Vec::from([0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 1 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]),
-            Vec::from([0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 2 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 3 pattern
-        mse += m_l.back_propagation(
-            Vec::from([0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 4 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-        ); // 5 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]),
-        ); // 6 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0]),
-        ); // 7 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]),
-        ); // 8 pattern
-        mse += m_l.back_propagation(
-            Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
-            Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
-        ); // 9 pattern
-        println!("MSE = {}", mse);
-    }
-    println!("\n------------------ After training  ---------------------- \n");
-    println!(
-        "The output is -> {:?}",
-        m_l.run(Vec::from([1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])),    
-    );
-}
