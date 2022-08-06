@@ -1,11 +1,11 @@
-// Shortening the module name
 mod perceptron;
 use perceptron::Perceptron;
 
 /* This NN predicts the numberpads output, when it is shows the correct pattern the NN will output the numeber in that a human would associate to that numberpads */
 
 fn main() {
-    // Inizialization of the multilayer network and randoms weights alloation
+    // -------- Inizialization of the multilayer network and randoms weights alloation   ---------------------//
+
     let mut m_l = MultiLayerPercetron::new(vec![7, 7, 7, 10], 1.0, 0.50);
     let init_weight = 0.50;
     m_l.set_weight(init_weight);
@@ -60,13 +60,12 @@ fn main() {
             Vec::from([1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
             Vec::from([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]),
         ); // 9 pattern
-
         if i % 100 == 0 {
             println!("MSE = {}", mse);
         }
     }
+    // Run the NN after the training procedure 
     println!("\n------------------ After training  ---------------------- \n");
-    
     let result_after_training = m_l.run(Vec::from([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]));
     for i in 0..10 {
         if result_after_training[i] > 0.5 {
@@ -163,6 +162,7 @@ impl MultiLayerPercetron {
     }
 
     // --------------------- Training algortims / Back propagation -------------------- //
+
     fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
 
         // Feed a sample to the NN and take the output vector for a comparison with y (the real result)
