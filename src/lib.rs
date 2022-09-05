@@ -3,6 +3,9 @@ use perceptron::Perceptron;
 
 // -------------- Inizialize Neural Network structure and its associated modules ------------------------- //
 
+/** 
+Struct to represent a multilayer Convolutional Neural Network.
+ */
 #[derive(Debug, Clone)]
 struct MultiLayerPercetron {
     bias: f64,          // The bias term. The same bias is used for all neurons.
@@ -15,7 +18,8 @@ struct MultiLayerPercetron {
 
 impl MultiLayerPercetron {
     // ------------------------ Construct NN ------------------------ //
-
+    
+    /** Creates a new CNN */
     fn new(input_layer: usize, output_layer: usize, middle_layers: Vec<usize>, bias: f64, eta: f64) -> Self {
         
         let mut input_layer: Vec<usize> = Vec::from([input_layer]);
@@ -54,7 +58,8 @@ impl MultiLayerPercetron {
     }
 
     // ------------------------ Weight settings ------------------------ //
-
+    
+    /** Set the intial weight of the network */
     fn set_weight(&mut self, w_init: f64) {
         // Start from 1 because the first layer does not contains neurons
         for i in 1..self.layers.len() {
@@ -65,6 +70,7 @@ impl MultiLayerPercetron {
     }
 
     // #[allow(unused)]
+    /** Print the current state of the networks weight  */
     fn print_weights(&self) {
         for i in 1..self.layers.len() {
             println!("Layer {}", i);
@@ -77,6 +83,7 @@ impl MultiLayerPercetron {
 
     // --------------------- Running algortims -------------------- //
 
+    /** Run the algorithm to get the result of the CNN given the input */
     fn run(&mut self, x: Vec<f64>) -> &Vec<f64> {
         // Setting the first layer as the input layer
         self.values[0] = x;
@@ -94,6 +101,7 @@ impl MultiLayerPercetron {
 
     // --------------------- Training algortims / Back propagation -------------------- //
 
+    /** Algorithm to train the CNN  */
     fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
         // Feed a sample to the NN and take the output vector for a comparison with y (the real result)
         let output = self.run(x).clone();

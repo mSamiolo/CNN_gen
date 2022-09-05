@@ -1,7 +1,14 @@
 [package]
-name = "rust_neural_network"
+name = "cnnks"
 version = "0.1.0"
 edition = "2021"
+authors = ["Mattia Samiolo <mattia.sami@hotmail.it>"]
+repository = "https://github.com/mSamiolo/rust_NN"
+license = "MIT"
+readme = "README.md"
+documentation = "http://killercup.github.io/hsl-rs/"
+description = "Libraries to generate and manage a multilple layers Convolutional Neural Network."
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
