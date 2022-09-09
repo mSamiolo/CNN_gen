@@ -3,27 +3,31 @@ use perceptron::Perceptron;
 
 // -------------- Inizialize Neural Network structure and its associated modules ------------------------- //
 
-/** 
-Struct to represent a multilayer Convolutional Neural Network.
- */
+/// Enum that reprent erro that can happen inside the NN
+#[derive(Debug)]
+pub enum CnnksError {
+    IncompatibeTrainingSample
+}
+
+///Struct to represent a multilayer Convolutional Neural Network.
 #[derive(Debug, Clone)]
-struct MultiLayerPercetron {
-    bias: f64,          // The bias term. The same bias is used for all neurons.
-    eta: f64,           // Learning rate
-    layers: Vec<usize>, // Array with the number of elements per layer
-    values: Vec<Vec<f64>>,
-    d: Vec<Vec<f64>>,
-    network: Vec<Vec<Perceptron>>,
+pub struct MultiLayerPercetron {
+    pub bias: f64,                  // The bias term. The same bias is used for all neurons.
+    pub eta: f64,                   // Learning rate
+    pub layers: Vec<usize>,         // Array with the number of elements per layer
+    pub values: Vec<Vec<f64>>,
+    pub d: Vec<Vec<f64>>,
+    pub network: Vec<Vec<Perceptron>>,
 }
 
 impl MultiLayerPercetron {
-    // ------------------------ Construct NN ------------------------ //
     
+    // ------------------------ Construct NN ------------------------ //
     /** Creates a new CNN */
-    fn new(input_layer: usize, output_layer: usize, middle_layers: Vec<usize>, bias: f64, eta: f64) -> Self {
+    pub fn new(input_layer: usize, output_layer: usize, middle_layers: Vec<usize>, bias: f64, eta: f64) -> Self {
         
-        let mut input_layer: Vec<usize> = Vec::from([input_layer]);
-        let mut output_layer: Vec<usize> = Vec::from([output_layer]);
+        let input_layer: Vec<usize> = Vec::from([input_layer]);
+        let output_layer: Vec<usize> = Vec::from([output_layer]);
 
         let layers = [input_layer, middle_layers, output_layer].concat();
 
@@ -57,10 +61,8 @@ impl MultiLayerPercetron {
         }
     }
 
-    // ------------------------ Weight settings ------------------------ //
-    
-    /** Set the intial weight of the network */
-    fn set_weight(&mut self, w_init: f64) {
+    /// Set the intial weight of the network 
+    pub fn set_weight(&mut self, w_init: f64) {
         // Start from 1 because the first layer does not contains neurons
         for i in 1..self.layers.len() {
             for j in 0..self.layers[i] {
@@ -71,7 +73,7 @@ impl MultiLayerPercetron {
 
     // #[allow(unused)]
     /** Print the current state of the networks weight  */
-    fn print_weights(&self) {
+    pub fn print_weights(&self) {
         for i in 1..self.layers.len() {
             println!("Layer {}", i);
             // The second for cycle start from 1.0 because it is the second layer that contains neurons
@@ -81,10 +83,8 @@ impl MultiLayerPercetron {
         }
     }
 
-    // --------------------- Running algortims -------------------- //
-
-    /** Run the algorithm to get the result of the CNN given the input */
-    fn run(&mut self, x: Vec<f64>) -> &Vec<f64> {
+    ///Run the algorithm to get the result of the CNN given the input
+    pub fn run(&mut self, x: Vec<f64>) -> &Vec<f64> {
         // Setting the first layer as the input layer
         self.values[0] = x;
         // hence from the second layer
@@ -99,15 +99,19 @@ impl MultiLayerPercetron {
         }
     }
 
-    // --------------------- Training algortims / Back propagation -------------------- //
-
-    /** Algorithm to train the CNN  */
-    fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> f64 {
+    /// Algorithm to train the CNN via back propagation
+    pub fn back_propagation(&mut self, x: Vec<f64>, y: Vec<f64>) -> Result<f64, CnnksError> {
         // Feed a sample to the NN and take the output vector for a comparison with y (the real result)
         let output = self.run(x).clone();
-        if output.len() != y.len() {
-            panic!("The output vector is not the same length as the input vector")
+        
+        match output.len() == y.len()  {
+            true => {},
+            false => return Err(CnnksError::IncompatibeTrainingSample)
         }
+
+        // if output.len() != y.len() {
+        //     panic!("The output vector is not the same length as the input vector")
+        // }
 
         // Inizialization of the output vector
         let mut error: Vec<f64> = Vec::new();
@@ -133,7 +137,7 @@ impl MultiLayerPercetron {
 
             // Evaluate the MSE
             match self.layers.last() {
-                Some(n) => mse = error.iter().sum::<f64>().powf(2.0) / n.clone() as f64,
+                Some(n) => mse = error.iter().sum::<f64>().powf(2.0) / *n as f64,
                 None => panic!("Invalid layer value at the end of the NN"),
             }
         }
@@ -156,6 +160,6 @@ impl MultiLayerPercetron {
                 }
             }
         }
-        mse
+        Ok(mse)
     }
 }

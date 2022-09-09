@@ -6,11 +6,11 @@ authors = ["Mattia Samiolo <mattia.sami@hotmail.it>"]
 repository = "https://github.com/mSamiolo/rust_NN"
 license = "MIT"
 readme = "README.md"
-documentation = "http://killercup.github.io/hsl-rs/"
+keywords = ["cnn","ml"]
 description = "Libraries to generate and manage a multilple layers Convolutional Neural Network."
-
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rand = "0.8.5"
+assert_approx_eq = "1.1.0"
